@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Cuentas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin: 20px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .grid-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background-color: #333;
+            transition: transform 0.3s;
+        }
+        .grid-item:hover {
+            transform: scale(1.05);
+        }
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .grid-item a {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gestor de Cuentas</h1>
+    
+    <div class="grid-container">
+        <!-- Añade más imágenes o duplica algunas para completar 12 elementos -->
+        <div class="grid-item">
+    <a href="/indexs/netflix.html"><img src="/imagenes/netflix.jpg" alt="Netflix"></a>
+        </div>
+        <div class="grid-item">
+            <a href="/indexs/prime.html"><img src="/imagenes/primevideo.png" alt="Prime Video"></a>
+        </div>
+        <div class="grid-item">
+            <a href="/indexs/paramount.html"><img src="/imagenes/Paramount.png" alt="Paramount"></a>
+        </div>
+        <div class="grid-item">
+            <a href="/indexs/youtube.html"><img src="/imagenes/youtube.jpg" alt="YouTube"></a>
+        </div>
+        <div class="grid-item">
+            <a href="/indexs/hbo.html"><img src="/imagenes/hbomax.jpeg" alt="HBO Max"></a>
+        </div>
+        <div class="grid-item">
+            <a href="/indexs/Crunchyroll.html"><img src="/imagenes/Crunchyroll.jpeg" alt="Crunchyroll"></a>
+        </div>
+        <div class="grid-item">
+            <a href="../indexs/plex.html"><img src="/imagenes/plex.png" alt="Plex"></a>
+        </div>
+        <div class="grid-item">
+            <a href="../indexs/iptv.html"><img src="/imagenes/iptv.png" alt="IPTV"></a>
+        </div>
+        <div class="grid-item">
+            <a href="../indexs/vix.html"><img src="/imagenes/vix.jpg" alt="Vix"></a>
+        </div>
+        <div class="grid-item">
+            <a href="../indexs/canva.html"><img src="/imagenes/canva.png" alt="Canva"></a>
+        </div>
+
+    </div>
+
+</body>
+</html>

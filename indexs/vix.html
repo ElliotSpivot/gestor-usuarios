@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plex - Gestor de Usuarios</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        img {
+        width: 20vh;
+        border-radius: 50%;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .container button, .container input {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        
+        #searchInput {
+          width: 85%;
+        }
+        button {
+            background-color: #e50914;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #b20710;
+        }
+        .hidden {
+            display: none;
+        }
+        .user-card {
+            background-color: #444;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+        strong {
+            color: rgb(207, 31, 31);
+        }
+    </style>
+</head>
+<body>
+
+    <img src="/imagenes/vix.jpg">
+
+    <div class="container">
+        <input type="text" id="searchInput" placeholder="Buscar por correo" oninput="searchUser()">
+        <button onclick="toggleForm()">Agregar Usuario</button>
+        <form id="dataForm" class="hidden" onsubmit="saveData(event)">
+            <input type="email" id="email" placeholder="Correo" >
+            <input type="text" id="password" placeholder="Contraseña" >
+            <input type="text" id="profile" placeholder="Perfil">
+            <input type="text" id="pin" placeholder="PIN">
+            <input type="text" id="date" placeholder="Fecha" required>
+            <input type="tel" id="phone" placeholder="Teléfono" required>
+            <input type="text" id="link" placeholder="Link TV" value="">
+            <button type="submit">Enviar</button>
+        </form>
+
+        <div id="userList"></div>
+    </div>
+
+    <script>
+        function toggleForm() {
+            document.getElementById('dataForm').classList.toggle('hidden');
+        }
+
+        function saveData(event) {
+            event.preventDefault();
+            
+            const userData = {
+                id: Date.now(),
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                profile: document.getElementById('profile').value,
+                pin: document.getElementById('pin').value,
+                date: document.getElementById('date').value,
+                link: document.getElementById('link').value,
+                phone: document.getElementById('phone').value,
+                createdAt: new Date().toLocaleString() 
+            };
+
+            let users = JSON.parse(localStorage.getItem('vix_users')) || [];
+            users.push(userData);
+            localStorage.setItem('vix_users', JSON.stringify(users));
+
+            document.getElementById('dataForm').reset();
+            toggleForm();
+            displayUsers();
+        }
+
+        function displayUsers(users = JSON.parse(localStorage.getItem('vix_users')) || []) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                userCard.innerHTML = `
+                    <p><strong>Correo:</strong> ${user.email}</p>
+                    <p><strong>Contraseña:</strong> ${user.password}</p>
+                    <p><strong>Perfil:</strong> ${user.profile}</p>
+                    <p><strong>PIN:</strong> ${user.pin}</p>
+                    <p><strong>F. VENCIMIENTO:</strong> ${user.date}</p>
+                    <p><strong>Teléfono:</strong> ${user.phone}</p>
+                    <p><strong>Link TV:</strong> ${user.link}</p>
+                    <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
+                    <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
+                `;
+                userList.appendChild(userCard);
+            });
+        }
+
+        function searchUser() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const users = JSON.parse(localStorage.getItem('vix_users')) || [];
+            const filteredUsers = users.filter(user => user.email.toLowerCase().includes(searchTerm));
+            displayUsers(filteredUsers);
+        }
+
+        function deleteUser(userId) {
+            let users = JSON.parse(localStorage.getItem('vix_users')) || [];
+            users = users.filter(user => user.id !== userId);
+            localStorage.setItem('vix_users', JSON.stringify(users));
+            displayUsers();
+        }
+
+        window.onload = function() {
+            displayUsers();
+        };
+    </script>
+</body>
+</html>
