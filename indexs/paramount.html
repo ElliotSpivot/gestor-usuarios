@@ -15,8 +15,8 @@
             min-height: 100vh;
         }
         img {
-        width: 20vh;
-        border-radius: 50%;
+            width: 20vh;
+            border-radius: 50%;
         }
         
         .container {
@@ -36,7 +36,7 @@
         }
         
         #searchInput {
-        width: 85%;
+            width: 85%;
         }
         button {
             background-color: #e50914;
@@ -65,14 +65,11 @@
     <img src="../imagenes/Paramount.png">
 
     <div class="container">
-        <!-- Campo de búsqueda -->
         <input type="text" id="searchInput" placeholder="Buscar por correo" oninput="searchUser()">
-
         <button onclick="toggleForm()">Agregar Usuario</button>
 
         <br><br>
 
-        <!-- Formulario -->
         <form id="dataForm" class="hidden" onsubmit="saveData(event)">
             <input type="email" id="email" placeholder="Correo" required>
             <input type="text" id="password" placeholder="Contraseña" required>
@@ -80,84 +77,112 @@
             <input type="text" id="pin" placeholder="PIN">
             <input type="text" id="date" placeholder="Fecha" required>
             <input type="tel" id="phone" placeholder="Teléfono" required>
-            <input type="text" id="link" placeholder="Link TV">
+            <input type="text" id="link" placeholder="Link TV" value="www.paramount.com/mytv">
             <button type="submit">Enviar</button>
         </form>
 
-        <!-- Lista de usuarios -->
         <div id="userList"></div>
     </div>
 
     <script>
+        let editingUserId = null; // Variable para almacenar el ID del usuario que se está editando
+
         function toggleForm() {
-    document.getElementById('dataForm').classList.toggle('hidden');
-}
+            document.getElementById('dataForm').classList.toggle('hidden');
+            if (editingUserId === null) {
+                document.getElementById('dataForm').reset(); // Reiniciar el formulario al abrirlo
+            }
+        }
 
-function saveData(event) {
-    event.preventDefault();
+        function saveData(event) {
+            event.preventDefault();
+            
+            const userData = {
+                id: editingUserId || Date.now(), // Usar el ID si se está editando
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                profile: document.getElementById('profile').value,
+                pin: document.getElementById('pin').value,
+                date: document.getElementById('date').value,
+                phone: document.getElementById('phone').value,
+                link: document.getElementById('link').value,
+                createdAt: new Date().toLocaleString()
+            };
 
-    const userData = {
-        id: Date.now(),
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-        profile: document.getElementById('profile').value,
-        pin: document.getElementById('pin').value,
-        date: document.getElementById('date').value,
-        phone: document.getElementById('phone').value,
-        link: document.getElementById('link').value,
-        createdAt: new Date().toLocaleString()
-    };
+            let users = JSON.parse(localStorage.getItem('paramount_users')) || [];
 
-    console.log('Datos del usuario:', userData);  // Verificación en la consola
+            if (editingUserId) {
+                // Actualizar el usuario existente
+                users = users.map(user => user.id === editingUserId ? userData : user);
+                editingUserId = null; // Reiniciar la variable de edición
+            } else {
+                // Agregar un nuevo usuario
+                users.push(userData);
+            }
 
-    let users = JSON.parse(localStorage.getItem('paramount_users')) || [];
-    users.push(userData);
-    localStorage.setItem('paramount_users', JSON.stringify(users));
+            localStorage.setItem('paramount_users', JSON.stringify(users));
+            document.getElementById('dataForm').reset();
+            toggleForm();
+            displayUsers();
+        }
 
-    document.getElementById('dataForm').reset();
-    toggleForm();
-    displayUsers();
-}
+        function displayUsers(users = JSON.parse(localStorage.getItem('paramount_users')) || []) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
 
-function displayUsers(users = JSON.parse(localStorage.getItem('paramount_users')) || []) {
-    const userList = document.getElementById('userList');
-    userList.innerHTML = '';
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                userCard.innerHTML = `
+                    <p><strong>Correo:</strong> ${user.email}</p>
+                    <p><strong>Contraseña:</strong> ${user.password}</p>
+                    <p><strong>Perfil:</strong> ${user.profile}</p>
+                    <p><strong>PIN:</strong> ${user.pin}</p>
+                    <p><strong>Fecha de exp:</strong> ${user.date}</p>
+                    <p><strong>Teléfono:</strong> ${user.phone}</p>
+                    <p><strong>Link TV:</strong> ${user.link}</p>
+                    <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
+                    <button onclick="editUser(${user.id})">Editar</button>
+                    <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
+                `;
+                userList.appendChild(userCard);
+            });
+        }
 
-    users.forEach(user => {
-        const userCard = document.createElement('div');
-        userCard.className = 'user-card';
-        userCard.innerHTML = `
-            <p><strong>Correo:</strong> ${user.email}</p>
-            <p><strong>Contraseña:</strong> ${user.password}</p>
-            <p><strong>Perfil:</strong> ${user.profile}</p>
-            <p><strong>PIN:</strong> ${user.pin}</p>
-            <p><strong>Fecha de exp:</strong> ${user.date}</p>
-            <p><strong>Teléfono:</strong> ${user.phone}</p>
-            <p><strong>Link TV:</strong> ${user.link}</p>
-            <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
-            <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
-        `;
-        userList.appendChild(userCard);
-    });
-}
+        function editUser(userId) {
+            const users = JSON.parse(localStorage.getItem('paramount_users')) || [];
+            const userToEdit = users.find(user => user.id === userId);
 
-function searchUser() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const users = JSON.parse(localStorage.getItem('paramount_users')) || [];
-    const filteredUsers = users.filter(user => user.email.toLowerCase().includes(searchTerm));
-    displayUsers(filteredUsers);
-}
+            if (userToEdit) {
+                editingUserId = userId; // Establecer el ID del usuario a editar
+                document.getElementById('email').value = userToEdit.email;
+                document.getElementById('password').value = userToEdit.password;
+                document.getElementById('profile').value = userToEdit.profile;
+                document.getElementById('pin').value = userToEdit.pin;
+                document.getElementById('date').value = userToEdit.date;
+                document.getElementById('phone').value = userToEdit.phone;
+                document.getElementById('link').value = userToEdit.link;
+                toggleForm(); // Mostrar el formulario para editar
+            }
+        }
 
-function deleteUser(userId) {
-    let users = JSON.parse(localStorage.getItem('paramount_users')) || [];
-    users = users.filter(user => user.id !== userId);
-    localStorage.setItem('paramount_users', JSON.stringify(users));
-    displayUsers();
-}
+        function searchUser() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const users = JSON.parse(localStorage.getItem('paramount_users')) || [];
+            const filteredUsers = users.filter(user => user.email.toLowerCase().includes(searchTerm));
+            displayUsers(filteredUsers);
+        }
 
-window.onload = function() {
-    displayUsers();
-};
+        function deleteUser(userId) {
+            let users = JSON.parse(localStorage.getItem('paramount_users')) || [];
+            users = users.filter(user => user.id !== userId);
+            localStorage.setItem('paramount_users', JSON.stringify(users));
+            displayUsers();
+        }
+
+        window.onload = function() {
+            displayUsers();
+        };
 
     </script>
 </body>

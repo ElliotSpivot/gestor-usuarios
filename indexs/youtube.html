@@ -15,8 +15,8 @@
             min-height: 100vh;
         }
         img {
-        width: 20vh;
-        border-radius: 50%;
+            width: 20vh;
+            border-radius: 50%;
         }
         
         .container {
@@ -36,7 +36,7 @@
         }
         
         #searchInput {
-        width: 85%;
+            width: 85%;
         }
         button {
             background-color: #e50914;
@@ -65,14 +65,11 @@
     <img src="../imagenes/youtube.jpg">
 
     <div class="container">
-        <!-- Campo de búsqueda -->
         <input type="text" id="searchInput" placeholder="Buscar por correo" oninput="searchUser()">
-
         <button onclick="toggleForm()">Agregar Usuario</button>
 
-    <br><br>
+        <br><br>
 
-        <!-- Formulario -->
         <form id="dataForm" class="hidden" onsubmit="saveData(event)">
             <input type="email" id="email" placeholder="Correo" required>
             <input type="text" id="password" placeholder="Contraseña" required>
@@ -81,31 +78,43 @@
             <button type="submit">Enviar</button>
         </form>
 
-        <!-- Lista de usuarios -->
         <div id="userList"></div>
     </div>
 
     <script>
-    function toggleForm() {
+        let editingUserId = null; // Variable para almacenar el ID del usuario que se está editando
+
+        function toggleForm() {
             document.getElementById('dataForm').classList.toggle('hidden');
+            if (editingUserId === null) {
+                document.getElementById('dataForm').reset(); // Reiniciar el formulario al abrirlo
+            }
         }
 
         function saveData(event) {
             event.preventDefault();
             
             const userData = {
-                id: Date.now(),
+                id: editingUserId || Date.now(), // Usar el ID si se está editando
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 date: document.getElementById('date').value,
                 phone: document.getElementById('phone').value,
-                createdAt: new Date().toLocaleString() 
+                createdAt: new Date().toLocaleString()
             };
 
             let users = JSON.parse(localStorage.getItem('youtube_users')) || [];
-            users.push(userData);
-            localStorage.setItem('youtube_users', JSON.stringify(users));
 
+            if (editingUserId) {
+                // Actualizar el usuario existente
+                users = users.map(user => user.id === editingUserId ? userData : user);
+                editingUserId = null; // Reiniciar la variable de edición
+            } else {
+                // Agregar un nuevo usuario
+                users.push(userData);
+            }
+
+            localStorage.setItem('youtube_users', JSON.stringify(users));
             document.getElementById('dataForm').reset();
             toggleForm();
             displayUsers();
@@ -124,10 +133,25 @@
                     <p><strong>F. VENCIMIENTO:</strong> ${user.date}</p>
                     <p><strong>Teléfono:</strong> ${user.phone}</p>
                     <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
+                    <button onclick="editUser(${user.id})">Editar</button>
                     <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
                 `;
                 userList.appendChild(userCard);
             });
+        }
+
+        function editUser(userId) {
+            const users = JSON.parse(localStorage.getItem('youtube_users')) || [];
+            const userToEdit = users.find(user => user.id === userId);
+
+            if (userToEdit) {
+                editingUserId = userId; // Establecer el ID del usuario a editar
+                document.getElementById('email').value = userToEdit.email;
+                document.getElementById('password').value = userToEdit.password;
+                document.getElementById('date').value = userToEdit.date;
+                document.getElementById('phone').value = userToEdit.phone;
+                toggleForm(); // Mostrar el formulario para editar
+            }
         }
 
         function searchUser() {

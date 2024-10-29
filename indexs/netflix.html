@@ -15,8 +15,8 @@
             min-height: 100vh;
         }
         img {
-        width: 20vh;
-        border-radius: 50%;
+            width: 20vh;
+            border-radius: 50%;
         }
         .container {
             width: 90%;
@@ -35,7 +35,7 @@
         }
         
         #searchInput {
-        width: 85%;
+            width: 85%;
         }
         button {
             background-color: #e50914;
@@ -83,15 +83,21 @@
     </div>
 
     <script>
+        let editingUserId = null; // Variable para almacenar el ID del usuario que se está editando
+
         function toggleForm() {
             document.getElementById('dataForm').classList.toggle('hidden');
+            // Resetear el formulario al abrirlo para agregar un nuevo usuario
+            if (editingUserId === null) {
+                document.getElementById('dataForm').reset();
+            }
         }
 
         function saveData(event) {
             event.preventDefault();
             
             const userData = {
-                id: Date.now(),
+                id: editingUserId || Date.now(), // Si está editando, usar el ID del usuario
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 profile: document.getElementById('profile').value,
@@ -103,7 +109,16 @@
             };
 
             let users = JSON.parse(localStorage.getItem('netflix_users')) || [];
-            users.push(userData);
+
+            if (editingUserId) {
+                // Actualizar el usuario existente
+                users = users.map(user => user.id === editingUserId ? userData : user);
+                editingUserId = null; // Resetear la variable de edición
+            } else {
+                // Agregar un nuevo usuario
+                users.push(userData);
+            }
+
             localStorage.setItem('netflix_users', JSON.stringify(users));
 
             document.getElementById('dataForm').reset();
@@ -127,10 +142,28 @@
                     <p><strong>Teléfono:</strong> ${user.phone}</p>
                     <p><strong>Link TV:</strong> ${user.link}</p>
                     <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
+                    <button onclick="editUser(${user.id})">Editar</button>
                     <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
                 `;
                 userList.appendChild(userCard);
             });
+        }
+
+        function editUser(userId) {
+            const users = JSON.parse(localStorage.getItem('netflix_users')) || [];
+            const userToEdit = users.find(user => user.id === userId);
+
+            if (userToEdit) {
+                editingUserId = userId; // Establecer el ID del usuario a editar
+                document.getElementById('email').value = userToEdit.email;
+                document.getElementById('password').value = userToEdit.password;
+                document.getElementById('profile').value = userToEdit.profile;
+                document.getElementById('pin').value = userToEdit.pin;
+                document.getElementById('date').value = userToEdit.date;
+                document.getElementById('phone').value = userToEdit.phone;
+                document.getElementById('link').value = userToEdit.link;
+                toggleForm(); // Mostrar el formulario para editar
+            }
         }
 
         function searchUser() {
