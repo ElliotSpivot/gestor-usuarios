@@ -3,187 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plex - Gestor de Usuarios</title>
+    <title>Gestor de Perfiles</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #1a1a1a;
             color: #f1f1f1;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: space-between;
             min-height: 100vh;
-        }
-        img {
-            width: 20vh;
-            border-radius: 50%;
-        }
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background-color: #333;
             padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            box-sizing: border-box;
         }
-        .container button, .container input {
-            width: 90%;
-            padding: 10px;
+
+        .container, .profiles-display {
+            width: 100%; /* Cambiar a 100% para pantallas pequeñas */
+    max-width: 800px; /* Máximo ancho para pantallas grandes */
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px;
+        }
+
+        @media (max-width: 768px) {
+    .container, .profiles-display {
+        width: 95%; /* Ampliar ancho en pantallas pequeñas */
+    }
+}
+select, input, button {
+    width: 90%; /* Mantener proporción */
+    padding: 8px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px; /* Tamaño de fuente mayor */
+}
+
+        button {
+            background-color: #e50914;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #b20710;
+        }
+
+        .profile-card {
+    background-color: #444;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+        .profile-separator {
+            border-top: 1px solid #555;
+            margin: 10px 0;
+        }
+
+        .toggle-button {
+            font-size: 12px;
+            width: auto;
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #555;
+            color: white;
+        }
+
+        .exp-date {
+            color: #e7e12d; /* Color para destacar la fecha de expiración */
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 8px;
             margin-top: 10px;
             border: none;
             border-radius: 5px;
         }
-        
-        #searchInput {
-            width: 85%;
+
+        a {
+            text-decoration: none;
+            color: red;
         }
-        button {
-            background-color: #e50914;
-            color: #fff;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #b20710;
-        }
-        .hidden {
-            display: none;
-        }
-        .user-card {
-            background-color: #444;
-            padding: 15px;
-            margin-top: 10px;
-            border-radius: 10px;
-        }
-        strong {
-            color: rgb(207, 31, 31);
-        }
+
+        .highlight {
+    background-color: yellow; /* Cambia el color de fondo del texto resaltado */
+    color: black; /* Cambia el color del texto si lo deseas */
+}
+
+.container img {
+    display: block;
+    margin: 0 auto;
+    max-width: 15%;
+    height: auto;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    /* Estilos para pantallas pequeñas */
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Estilos para tabletas */
+}
+
+@media (min-width: 1025px) {
+    /* Estilos para pantallas grandes */
+}
+
     </style>
 </head>
 <body>
 
-    <img src="../imagenes/vix.jpg">
-
     <div class="container">
-        <input type="text" id="searchInput" placeholder="Buscar por correo" oninput="searchUser()">
-        <button onclick="toggleForm()">Agregar Usuario</button>
-        <form id="dataForm" class="hidden" onsubmit="saveData(event)">
-            <input type="email" id="email" placeholder="Correo" required>
-            <input type="text" id="password" placeholder="Contraseña" required>
-            <input type="text" id="profile" placeholder="Perfil">
-            <input type="text" id="pin" placeholder="PIN">
-            <input type="text" id="date" placeholder="Fecha" required>
-            <input type="tel" id="phone" placeholder="Teléfono" required>
-            <input type="text" id="link" placeholder="Link TV" value="">
-            <button type="submit">Enviar</button>
-        </form>
+        <img src="../imagenes/vix.jpg">
+        <h2>¿Cuántos perfiles quieres agregar?</h2>
+        <select id="profileCount" onchange="generateForms()">
+            <option value="0">Selecciona un número</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
 
-        <div id="userList"></div>
+        <div id="formContainer"></div>
+        <button onclick="saveProfiles()">Guardar Perfiles</button>
+    </div>
+
+    <div class="profiles-display">
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <input type="text" id="searchInput" placeholder="Buscar por cualquier dato" oninput="searchProfiles()">
+        </div>
+        <div id="profilesDisplay">
+            <h2>Perfiles Agregados</h2>
+        </div>
     </div>
 
     <script>
-        let editUserId = null; // Variable para almacenar el ID del usuario que se está editando
+        let profilesData = [];
+        let editingAccountIndex = null;
 
-        function toggleForm() {
-            document.getElementById('dataForm').classList.toggle('hidden');
-            if (editUserId === null) {
-                resetForm(); // Reiniciar el formulario solo si no se está editando
-            }
-        }
+        function generateForms() {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.innerHTML = '';
 
-        function resetForm() {
-            document.getElementById('dataForm').reset(); // Reiniciar el formulario
-        }
+            const profileCount = parseInt(document.getElementById('profileCount').value);
 
-        function saveData(event) {
-            event.preventDefault();
-            
-            const userData = {
-                id: editUserId ? editUserId : Date.now(),
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                profile: document.getElementById('profile').value,
-                pin: document.getElementById('pin').value,
-                date: document.getElementById('date').value,
-                link: document.getElementById('link').value,
-                phone: document.getElementById('phone').value,
-                createdAt: new Date().toLocaleString() 
-            };
-
-            let users = JSON.parse(localStorage.getItem('vix_users')) || [];
-
-            if (editUserId) {
-                // Actualizar el usuario existente
-                users = users.map(user => user.id === editUserId ? userData : user);
-                editUserId = null; // Reiniciar el ID después de la edición
-            } else {
-                // Agregar nuevo usuario
-                users.push(userData);
-            }
-
-            localStorage.setItem('vix_users', JSON.stringify(users));
-
-            resetForm(); // Reiniciar el formulario
-            toggleForm();
-            displayUsers();
-        }
-
-        function displayUsers(users = JSON.parse(localStorage.getItem('vix_users')) || []) {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-
-            users.forEach(user => {
-                const userCard = document.createElement('div');
-                userCard.className = 'user-card';
-                userCard.innerHTML = `
-                    <p><strong>Correo:</strong> ${user.email}</p>
-                    <p><strong>Contraseña:</strong> ${user.password}</p>
-                    <p><strong>Perfil:</strong> ${user.profile}</p>
-                    <p><strong>PIN:</strong> ${user.pin}</p>
-                    <p><strong>F. VENCIMIENTO:</strong> ${user.date}</p>
-                    <p><strong>Teléfono:</strong> ${user.phone}</p>
-                    <p><strong>Link TV:</strong> ${user.link}</p>
-                    <p><strong>Fecha de creación:</strong> ${user.createdAt}</p>
-                    <button onclick="deleteUser(${user.id})">Eliminar usuario</button>
-                    <button onclick="editUser(${user.id})">Editar</button>
+            for (let i = 1; i <= profileCount; i++) {
+                const form = document.createElement('div');
+                form.innerHTML = `
+                    <h3>Perfil ${i}</h3>
+                    ${i === 1 ? '<input type="text" placeholder="Nombre de la Cuenta" id="accountName" required>' : ''}
+        <input type="email" placeholder="Correo" id="email-${i}" required>
+        <input type="text" placeholder="Contraseña" id="password-${i}" required>
+        <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
+        <input type="text" placeholder="PIN" id="pin-${i}">
+        <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
+        <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
                 `;
-                userList.appendChild(userCard);
-            });
-        }
+                formContainer.appendChild(form);
+            }
 
-        function searchUser() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const users = JSON.parse(localStorage.getItem('vix_users')) || [];
-            const filteredUsers = users.filter(user => user.email.toLowerCase().includes(searchTerm));
-            displayUsers(filteredUsers);
-        }
-
-        function deleteUser(userId) {
-            let users = JSON.parse(localStorage.getItem('vix_users')) || [];
-            users = users.filter(user => user.id !== userId);
-            localStorage.setItem('vix_users', JSON.stringify(users));
-            displayUsers();
-        }
-
-        function editUser(userId) {
-            let users = JSON.parse(localStorage.getItem('vix_users')) || [];
-            const user = users.find(user => user.id === userId);
-            if (user) {
-                // Rellenar el formulario con los datos del usuario a editar
-                document.getElementById('email').value = user.email;
-                document.getElementById('password').value = user.password;
-                document.getElementById('profile').value = user.profile;
-                document.getElementById('pin').value = user.pin;
-                document.getElementById('date').value = user.date;
-                document.getElementById('phone').value = user.phone;
-                document.getElementById('link').value = user.link;
-                editUserId = userId;  // Establecer el ID del usuario a editar
-                toggleForm();  // Mostrar el formulario
+            // Si estamos editando, cargar los datos actuales en el formulario
+            if (editingAccountIndex !== null) {
+                loadEditingData();
             }
         }
 
-        window.onload = function() {
-            displayUsers(); // Cargar usuarios al cargar la página
-        };
+        function loadEditingData() {
+            const account = profilesData[editingAccountIndex];
+            document.getElementById('accountName').value = account.accountName;
+
+            account.profiles.forEach((profile, index) => {
+                document.getElementById(`email-${index + 1}`).value = profile.email;
+                document.getElementById(`password-${index + 1}`).value = profile.password;
+                document.getElementById(`profile-${index + 1}`).value = profile.profile;
+                document.getElementById(`pin-${index + 1}`).value = profile.pin;
+                document.getElementById(`date-${index + 1}`).value = profile.date;
+                document.getElementById(`phone-${index + 1}`).value = profile.phone;
+                document.getElementById(`link-${index + 1}`).value = profile.link;
+            });
+
+            document.getElementById('profileCount').value = account.profiles.length;
+        }
+
+        function saveProfiles() {
+            const profileCount = parseInt(document.getElementById('profileCount').value);
+            const accountName = document.getElementById('accountName')?.value || 'Cuenta Sin Nombre';
+
+            const profiles = [];
+
+            for (let i = 1; i <= profileCount; i++) {
+                const email = document.getElementById(`email-${i}`).value;
+                const password = document.getElementById(`password-${i}`).value;
+                const profile = document.getElementById(`profile-${i}`).value;
+                const pin = document.getElementById(`pin-${i}`).value;
+                const date = document.getElementById(`date-${i}`).value;
+                const phone = document.getElementById(`phone-${i}`).value;
+                const link = document.getElementById(`link-${i}`).value;
+
+                profiles.push({ email, password, profile, pin, date, phone, link });
+            }
+
+            if (editingAccountIndex !== null) {
+                profilesData[editingAccountIndex] = { accountName, profiles };
+                editingAccountIndex = null;
+            } else {
+                profilesData.push({ accountName, profiles });
+            }
+
+            displayProfiles();
+            toggleSearchButton();
+        }
+
+        function displayProfiles(filteredData = profilesData) {
+    const profilesDisplay = document.getElementById('profilesDisplay');
+    profilesDisplay.innerHTML = '<h2>Perfiles Agregados</h2>';
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+    filteredData.forEach((account, accountIndex) => {
+        const profileCard = document.createElement('div');
+        profileCard.className = 'profile-card';
+        profileCard.innerHTML = `
+            <h3>${highlightText(account.accountName, searchTerm)}</h3>
+            ${account.profiles.map((profile, index) => `
+                <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
+                <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
+                <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
+                <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
+                <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
+                <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
+                <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
+                ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
+            `).join('')}
+            <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
+            <button onclick="deleteAccount(${accountIndex})" class="toggle-button">Eliminar Cuenta</button>
+        `;
+        profilesDisplay.appendChild(profileCard);
+    });
+}
+
+function highlightText(text, searchTerm) {
+    if (!searchTerm) return text; // Si no hay término de búsqueda, retorna el texto original.
+    const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crea una expresión regular para la búsqueda
+    return text.replace(regex, '<span class="highlight">$1</span>'); // Reemplaza el texto encontrado por el texto resaltado
+}
+
+        function searchProfiles() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = profilesData.filter(account => {
+                return (
+                    account.accountName.toLowerCase().includes(searchTerm) ||
+                    account.profiles.some(profile => {
+                        return Object.values(profile).some(value => value.toString().toLowerCase().includes(searchTerm));
+                    })
+                );
+            });
+            displayProfiles(filteredData);
+        }
+
+        function toggleSearchButton() {
+            const searchContainer = document.getElementById('searchContainer');
+            searchContainer.style.display = profilesData.length > 0 ? 'block' : 'none';
+        }
+
+        function editAccount(accountIndex) {
+            editingAccountIndex = accountIndex;
+            generateForms(); // Regenerar los formularios para mostrar los datos de la cuenta actual
+        }
+
+        function deleteAccount(accountIndex) {
+            profilesData.splice(accountIndex, 1);
+            displayProfiles();
+            toggleSearchButton();
+        }
     </script>
+
 </body>
 </html>
