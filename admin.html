@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    <style>
+        /* Estilos para la tabla de usuarios */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Panel de Administración</h1>
+    <table id="users-table">
+        <thead>
+            <tr>
+                <th>Correo Electrónico</th>
+                <th>Aceptar</th>
+                <th>Rechazar</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se agregarán las filas de usuarios -->
+        </tbody>
+    </table>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7MWoAWMcBF48XnG1xcmUCdmQzZ_7JvPA",
+            authDomain: "gestor-de-cuentas-6c3c3.firebaseapp.com",
+            projectId: "gestor-de-cuentas-6c3c3",
+            storageBucket: "gestor-de-cuentas-6c3c3.appspot.com",
+            messagingSenderId: "596654360708",
+            appId: "1:596654360708:web:1ea8c1d5693832cda75ad1",
+            measurementId: "G-P7ZNXRCJGG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore();
+
+        async function loadUsers() {
+            const usersRef = collection(db, "users");
+            const snapshot = await getDocs(usersRef);
+            const tableBody = document.getElementById('users-table').querySelector('tbody');
+
+            snapshot.forEach(doc => {
+                const userData = doc.data();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${userData.email}</td>
+                    <td><button onclick="acceptUser('${doc.id}')">Aceptar</button></td>
+                    <td><button onclick="rejectUser('${doc.id}')">Rechazar</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Definir la función acceptUser en el ámbito global
+        window.acceptUser = async function(userId) {
+            const userRef = doc(db, "users", userId);
+            try {
+                await updateDoc(userRef, {
+                    accepted: true // Cambiar el estado a aceptado
+                });
+                alert('Usuario aceptado.');
+                location.reload(); // Recargar la página para mostrar los cambios
+            } catch (error) {
+                console.error("Error actualizando el usuario: ", error);
+                alert('Hubo un error al aceptar el usuario.');
+            }
+        };
+
+        // Definir la función rejectUser en el ámbito global
+        window.rejectUser = async function(userId) {
+            const userRef = doc(db, "users", userId);
+            try {
+                await updateDoc(userRef, {
+                    accepted: false // Cambiar el estado a no aceptado
+                });
+                alert('Usuario rechazado.');
+                location.reload(); // Recargar la página para mostrar los cambios
+            } catch (error) {
+                console.error("Error actualizando el usuario: ", error);
+                alert('Hubo un error al rechazar el usuario.');
+            }
+        };
+
+        loadUsers();
+    </script>
+
+</body>
+</html>

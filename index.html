@@ -11,16 +11,57 @@
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #1a1a1a;
             color: #f1f1f1;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            justify-content: center;
         }
         h1 {
-            margin: 20px;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #f9a825; /* Color dorado */
+        }
+        #login-container {
+            background-color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #login-container input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+            width: 250px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #555; /* Fondo más claro para los inputs */
+            color: #fff;
+        }
+        #login-container button {
+            padding: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #f9a825; /* Botón dorado */
+            color: #1a1a1a; /* Texto oscuro en el botón */
+            transition: background-color 0.3s ease;
+            margin: 10px; /* Margen añadido */
+        }
+        #login-container button:hover {
+            background-color: #c68b00; /* Color más oscuro al pasar el mouse */
+        }
+        #error-message {
+            color: red;
+            margin-top: 10px;
+            display: none; /* Ocultar inicialmente */
         }
         .grid-container {
             display: grid;
@@ -29,37 +70,37 @@
             width: 90%;
             max-width: 1200px;
             margin-top: 20px;
+            display: none; /* Ocultar inicialmente */
         }
         .grid-item {
-            position: relative;
-            overflow: hidden;
-            border-radius: 10px;
-            background-color: #333;
-            transition: transform 0.3s;
-        }
-        .grid-item:hover {
-            transform: scale(1.05);
+            text-align: center;
         }
         .grid-item img {
             width: 100%;
             height: auto;
-            display: block;
+            border-radius: 10px;
+            transition: transform 0.3s;
         }
-        .grid-item a {
-            display: block;
-            color: inherit;
-            text-decoration: none;
+        .grid-item img:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
 
-    <h1>Gestor de cuentas</h1>
+    <h1>Gestor de Cuentas</h1>
     
-    <div class="grid-container">
-        <!-- Añade más imágenes o duplica algunas para completar 12 elementos -->
+    <div id="login-container">
+        <input type="email" id="email" placeholder="Correo Electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button onclick="login()">Iniciar Sesión</button>
+        <div id="error-message"></div>
+        <button onclick="location.href='register.html'">Registrarse</button>
+    </div>
+
+    <div class="grid-container" id="grid-container">
         <div class="grid-item">
-    <a href="indexs/netflix.html"><img src="imagenes/netflix.jpg" title="Netflix"></a>
+            <a href="indexs/netflix.html"><img src="imagenes/netflix.jpg" title="Netflix"></a>
         </div>
         <div class="grid-item">
             <a href="indexs/prime.html"><img src="imagenes/primevideo.png" title="Prime Video"></a>
@@ -89,13 +130,74 @@
             <a href="indexs/canva.html"><img src="imagenes/canva.png" title="Canva"></a>
         </div>
         <div class="grid-item">
-            <a href="indexs/disney.html"><img src="imagenes/disneyplus.png" title="Dsiney Plus"></a>
+            <a href="indexs/disney.html"><img src="imagenes/disneyplus.png" title="Disney Plus"></a>
         </div>
         <div class="grid-item">
-            <a href="indexs/spotify.html"><img src="imagenes/spotify.png" title="spotify plus"></a>
+            <a href="indexs/spotify.html"><img src="imagenes/spotify.png" title="Spotify Plus"></a>
         </div>
-
     </div>
+
+    <script type="module">
+        // Importar las funciones necesarias de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7MWoAWMcBF48XnG1xcmUCdmQzZ_7JvPA",
+            authDomain: "gestor-de-cuentas-6c3c3.firebaseapp.com",
+            projectId: "gestor-de-cuentas-6c3c3",
+            storageBucket: "gestor-de-cuentas-6c3c3.appspot.com",
+            messagingSenderId: "596654360708",
+            appId: "1:596654360708:web:1ea8c1d5693832cda75ad1",
+            measurementId: "G-P7ZNXRCJGG"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        const db = getFirestore();
+
+        // Función de inicio de sesión
+        window.login = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            try {
+                // Iniciar sesión con Firebase Authentication
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Verificar si el usuario ha sido aceptado en Firestore
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("email", "==", email));
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    const userDoc = snapshot.docs[0].data();
+                    if (userDoc.accepted) {
+                        errorMessage.style.display = 'none';
+                        document.getElementById('grid-container').style.display = 'grid'; // Muestra la cuadrícula
+                        document.getElementById('login-container').style.display = 'none'; // Oculta el contenedor de inicio de sesión
+                    } else {
+                        errorMessage.style.display = 'block';
+                        errorMessage.innerText = 'Tu cuenta está pendiente de aprobación.';
+                    }
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerText = 'Usuario no encontrado.';
+                }
+            } catch (error) {
+                const errorMessageText = error.message;
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = errorMessageText; // Muestra el mensaje de error
+            }
+        }
+    </script>
 
 </body>
 </html>

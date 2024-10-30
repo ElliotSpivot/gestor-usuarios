@@ -18,26 +18,27 @@
 
         .container, .profiles-display {
             width: 100%; /* Cambiar a 100% para pantallas pequeñas */
-    max-width: 800px; /* Máximo ancho para pantallas grandes */
-    background-color: #333;
-    padding: 20px;
-    border-radius: 10px;
-    margin: 10px;
+            max-width: 800px; /* Máximo ancho para pantallas grandes */
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
         }
 
         @media (max-width: 768px) {
-    .container, .profiles-display {
-        width: 95%; /* Ampliar ancho en pantallas pequeñas */
-    }
-}
-select, input, button {
-    width: 90%; /* Mantener proporción */
-    padding: 8px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px; /* Tamaño de fuente mayor */
-}
+            .container, .profiles-display {
+                width: 95%; /* Ampliar ancho en pantallas pequeñas */
+            }
+        }
+
+        select, input, button {
+            width: 90%; /* Mantener proporción */
+            padding: 8px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px; /* Tamaño de fuente mayor */
+        }
 
         button {
             background-color: #e50914;
@@ -50,11 +51,11 @@ select, input, button {
         }
 
         .profile-card {
-    background-color: #444;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-}
+            background-color: #444;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
 
         .profile-separator {
             border-top: 1px solid #555;
@@ -92,36 +93,23 @@ select, input, button {
         }
 
         .highlight {
-    background-color: yellow; /* Cambia el color de fondo del texto resaltado */
-    color: black; /* Cambia el color del texto si lo deseas */
-}
+            background-color: yellow; /* Cambia el color de fondo del texto resaltado */
+            color: black; /* Cambia el color del texto si lo deseas */
+        }
 
-.container img {
-    display: block;
-    margin: 0 auto;
-    max-width: 15%;
-    height: auto;
-    border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-    /* Estilos para pantallas pequeñas */
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    /* Estilos para tabletas */
-}
-
-@media (min-width: 1025px) {
-    /* Estilos para pantallas grandes */
-}
-
+        .container img {
+            display: block;
+            margin: 0 auto;
+            max-width: 15%;
+            height: auto;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <img src="../imagenes/youtube.jpg">
+        <img src="../imagenes/youtube.jpg" alt="Logo de YouTube">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
             <option value="0">Selecciona un número</option>
@@ -151,7 +139,7 @@ select, input, button {
     </div>
 
     <script>
-        let profilesData = [];
+        let profilesData = JSON.parse(localStorage.getItem('profilesData')) || [];
         let editingAccountIndex = null;
 
         function generateForms() {
@@ -168,10 +156,9 @@ select, input, button {
                     <input type="email" placeholder="Correo" id="email-${i}" required>
                     <input type="text" placeholder="Contraseña" id="password-${i}" required>
                     <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
-                    <input type="text" placeholder="PIN" id="pin-${i}">
+                    
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value="https://netflix.com/tv8">
                 `;
                 formContainer.appendChild(form);
             }
@@ -224,43 +211,46 @@ select, input, button {
                 profilesData.push({ accountName, profiles });
             }
 
+            // Guardar los datos en localStorage
+            localStorage.setItem('profilesData', JSON.stringify(profilesData));
+
             displayProfiles();
             toggleSearchButton();
         }
 
         function displayProfiles(filteredData = profilesData) {
-    const profilesDisplay = document.getElementById('profilesDisplay');
-    profilesDisplay.innerHTML = '<h2>Perfiles Agregados</h2>';
+            const profilesDisplay = document.getElementById('profilesDisplay');
+            profilesDisplay.innerHTML = '<h2>Perfiles Agregados</h2>';
 
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-    filteredData.forEach((account, accountIndex) => {
-        const profileCard = document.createElement('div');
-        profileCard.className = 'profile-card';
-        profileCard.innerHTML = `
-            <h3>${highlightText(account.accountName, searchTerm)}</h3>
-            ${account.profiles.map((profile, index) => `
-                <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
-                <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
-                <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
-                <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
-                <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
-                <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
-                <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
-                ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
-            `).join('')}
-            <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
-            <button onclick="deleteAccount(${accountIndex})" class="toggle-button">Eliminar Cuenta</button>
-        `;
-        profilesDisplay.appendChild(profileCard);
-    });
-}
+            filteredData.forEach((account, accountIndex) => {
+                const profileCard = document.createElement('div');
+                profileCard.className = 'profile-card';
+                profileCard.innerHTML = `
+                    <h3>${highlightText(account.accountName, searchTerm)}</h3>
+                    ${account.profiles.map((profile, index) => `
+                        <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
+                        <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
+                        <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
+                        <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
+                        <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
+                        <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
+                        <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
+                        ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
+                    `).join('')}
+                    <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
+                    <button onclick="deleteAccount(${accountIndex})" class="toggle-button">Eliminar Cuenta</button>
+                `;
+                profilesDisplay.appendChild(profileCard);
+            });
+        }
 
-function highlightText(text, searchTerm) {
-    if (!searchTerm) return text; // Si no hay término de búsqueda, retorna el texto original.
-    const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crea una expresión regular para la búsqueda
-    return text.replace(regex, '<span class="highlight">$1</span>'); // Reemplaza el texto encontrado por el texto resaltado
-}
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return text; // Si no hay término de búsqueda, retorna el texto original.
+            const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crea una expresión regular para la búsqueda
+            return text.replace(regex, '<span class="highlight">$1</span>'); // Reemplaza el texto encontrado por el texto resaltado
+        }
 
         function searchProfiles() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -287,9 +277,16 @@ function highlightText(text, searchTerm) {
 
         function deleteAccount(accountIndex) {
             profilesData.splice(accountIndex, 1);
+            localStorage.setItem('profilesData', JSON.stringify(profilesData)); // Actualizar localStorage
             displayProfiles();
             toggleSearchButton();
         }
+
+        // Cargar perfiles al iniciar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            displayProfiles();
+            toggleSearchButton();
+        });
     </script>
 
 </body>
