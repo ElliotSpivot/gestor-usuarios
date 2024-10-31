@@ -96,6 +96,11 @@
         <button onclick="login()">Iniciar Sesión</button>
         <div id="error-message"></div>
         <button onclick="location.href='register.html'">Registrarse</button>
+        <a href="https://t.me/MiguelCarmonaM" target="_blank">
+            <button>
+                Adquirir
+            </button>
+        </a>
     </div>
 
     <div class="grid-container" id="grid-container">
@@ -141,7 +146,7 @@
         // Importar las funciones necesarias de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         // Tu configuración de Firebase
@@ -160,6 +165,15 @@
         const analytics = getAnalytics(app);
         const auth = getAuth();
         const db = getFirestore();
+
+        // Verificar si el usuario está autenticado al cargar la página
+        const email = localStorage.getItem('userEmail');
+        const accepted = localStorage.getItem('userAccepted');
+
+        if (email && accepted === 'true') {
+            document.getElementById('grid-container').style.display = 'grid'; // Muestra la cuadrícula
+            document.getElementById('login-container').style.display = 'none'; // Oculta el contenedor de inicio de sesión
+        }
 
         // Función de inicio de sesión
         window.login = async function() {
@@ -180,6 +194,10 @@
                 if (!snapshot.empty) {
                     const userDoc = snapshot.docs[0].data();
                     if (userDoc.accepted) {
+                        // Almacena el email y el estado de aceptación en localStorage
+                        localStorage.setItem('userEmail', email);
+                        localStorage.setItem('userAccepted', 'true');
+
                         errorMessage.style.display = 'none';
                         document.getElementById('grid-container').style.display = 'grid'; // Muestra la cuadrícula
                         document.getElementById('login-container').style.display = 'none'; // Oculta el contenedor de inicio de sesión

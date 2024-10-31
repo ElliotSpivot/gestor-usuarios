@@ -90,11 +90,19 @@
             height: auto;
             border-radius: 8px;
         }
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
+
 <body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
         <img src="../imagenes/netflix.jpg">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
@@ -117,8 +125,10 @@
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
 
     <script>
+
         let profilesData = [];
         let editingAccountIndex = null;
 
@@ -197,17 +207,18 @@
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('profilesData', JSON.stringify(profilesData));
-        }
+    localStorage.setItem('netflixProfiles', JSON.stringify(profilesData));
+}
 
-        function loadProfilesFromLocalStorage() {
-            const storedData = localStorage.getItem('profilesData');
-            if (storedData) {
-                profilesData = JSON.parse(storedData);
-                displayProfiles();
-                toggleSearchButton();
-            }
-        }
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('netflixProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
 
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');

@@ -17,8 +17,8 @@
         }
 
         .container, .profiles-display {
-            width: 100%; /* Cambiar a 100% para pantallas pequeñas */
-            max-width: 800px; /* Máximo ancho para pantallas grandes */
+            width: 100%;
+            max-width: 800px;
             background-color: #333;
             padding: 20px;
             border-radius: 10px;
@@ -27,17 +27,17 @@
 
         @media (max-width: 768px) {
             .container, .profiles-display {
-                width: 95%; /* Ampliar ancho en pantallas pequeñas */
+                width: 95%;
             }
         }
 
         select, input, button {
-            width: 90%; /* Mantener proporción */
+            width: 90%;
             padding: 8px;
             margin-top: 10px;
             border: none;
             border-radius: 5px;
-            font-size: 14px; /* Tamaño de fuente mayor */
+            font-size: 14px;
         }
 
         button {
@@ -64,7 +64,6 @@
 
         .toggle-button {
             font-size: 12px;
-            width: auto;
             margin-left: 10px;
             padding: 5px 10px;
             background-color: #555;
@@ -72,29 +71,16 @@
         }
 
         .exp-date {
-            color: #e7e12d; /* Color para destacar la fecha de expiración */
+            color: #e7e12d;
         }
 
         .search-container {
             margin-bottom: 20px;
         }
 
-        .search-container input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-
-        a {
-            text-decoration: none;
-            color: red;
-        }
-
         .highlight {
-            background-color: yellow; /* Cambia el color de fondo del texto resaltado */
-            color: black; /* Cambia el color del texto si lo deseas */
+            background-color: yellow;
+            color: black;
         }
 
         .container img {
@@ -104,12 +90,19 @@
             height: auto;
             border-radius: 8px;
         }
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
-<body>
+<body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
-        <img src="../imagenes/youtube.jpg" alt="Logo de YouTube">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <img src="../imagenes/youtube.jpg">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
             <option value="0">Selecciona un número</option>
@@ -137,9 +130,9 @@
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
     <script>
-        let profilesData = JSON.parse(localStorage.getItem('profilesData')) || [];
+        let profilesData = [];
         let editingAccountIndex = null;
 
         function generateForms() {
@@ -156,14 +149,13 @@
                     <input type="email" placeholder="Correo" id="email-${i}" required>
                     <input type="text" placeholder="Contraseña" id="password-${i}" required>
                     <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
-                    
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
+                    
                 `;
                 formContainer.appendChild(form);
             }
 
-            // Si estamos editando, cargar los datos actuales en el formulario
             if (editingAccountIndex !== null) {
                 loadEditingData();
             }
@@ -211,12 +203,24 @@
                 profilesData.push({ accountName, profiles });
             }
 
-            // Guardar los datos en localStorage
-            localStorage.setItem('profilesData', JSON.stringify(profilesData));
-
+            saveToLocalStorage();
             displayProfiles();
             toggleSearchButton();
         }
+
+        function saveToLocalStorage() {
+    localStorage.setItem('youtubeProfiles', JSON.stringify(profilesData));
+}
+
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('youtubeProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
 
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');
@@ -247,47 +251,46 @@
         }
 
         function highlightText(text, searchTerm) {
-            if (!searchTerm) return text; // Si no hay término de búsqueda, retorna el texto original.
-            const regex = new RegExp(`(${searchTerm})`, 'gi'); // Crea una expresión regular para la búsqueda
-            return text.replace(regex, '<span class="highlight">$1</span>'); // Reemplaza el texto encontrado por el texto resaltado
-        }
-
-        function searchProfiles() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredData = profilesData.filter(account => {
-                return (
-                    account.accountName.toLowerCase().includes(searchTerm) ||
-                    account.profiles.some(profile => {
-                        return Object.values(profile).some(value => value.toString().toLowerCase().includes(searchTerm));
-                    })
-                );
-            });
-            displayProfiles(filteredData);
+            if (!searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
         }
 
         function toggleSearchButton() {
             const searchContainer = document.getElementById('searchContainer');
-            searchContainer.style.display = profilesData.length > 0 ? 'block' : 'none';
+            searchContainer.style.display = profilesData.length ? 'block' : 'none';
         }
 
         function editAccount(accountIndex) {
             editingAccountIndex = accountIndex;
-            generateForms(); // Regenerar los formularios para mostrar los datos de la cuenta actual
+            const account = profilesData[accountIndex];
+            document.getElementById('profileCount').value = account.profiles.length;
+            generateForms();
         }
 
         function deleteAccount(accountIndex) {
             profilesData.splice(accountIndex, 1);
-            localStorage.setItem('profilesData', JSON.stringify(profilesData)); // Actualizar localStorage
+            saveToLocalStorage();
             displayProfiles();
             toggleSearchButton();
         }
 
-        // Cargar perfiles al iniciar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            displayProfiles();
-            toggleSearchButton();
-        });
+        function searchProfiles() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = profilesData.filter(account =>
+                account.accountName.toLowerCase().includes(searchTerm) ||
+                account.profiles.some(profile =>
+                    profile.email.toLowerCase().includes(searchTerm) ||
+                    profile.password.toLowerCase().includes(searchTerm) ||
+                    profile.profile.toLowerCase().includes(searchTerm) ||
+                    profile.pin.toLowerCase().includes(searchTerm) ||
+                    profile.date.toLowerCase().includes(searchTerm) ||
+                    profile.phone.toLowerCase().includes(searchTerm) ||
+                    profile.link.toLowerCase().includes(searchTerm)
+                )
+            );
+            displayProfiles(filteredData);
+        }
     </script>
-
 </body>
 </html>

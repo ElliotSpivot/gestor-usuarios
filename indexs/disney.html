@@ -17,27 +17,28 @@
         }
 
         .container, .profiles-display {
-            width: 100%; /* Cambiar a 100% para pantallas pequeñas */
-    max-width: 800px; /* Máximo ancho para pantallas grandes */
-    background-color: #333;
-    padding: 20px;
-    border-radius: 10px;
-    margin: 10px;
+            width: 100%;
+            max-width: 800px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
         }
 
         @media (max-width: 768px) {
-    .container, .profiles-display {
-        width: 95%; /* Ampliar ancho en pantallas pequeñas */
-    }
-}
-select, input, button {
-    width: 90%; /* Mantener proporción */
-    padding: 8px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px; /* Tamaño de fuente mayor */
-}
+            .container, .profiles-display {
+                width: 95%;
+            }
+        }
+
+        select, input, button {
+            width: 90%;
+            padding: 8px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
 
         button {
             background-color: #e50914;
@@ -50,11 +51,11 @@ select, input, button {
         }
 
         .profile-card {
-    background-color: #444;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-}
+            background-color: #444;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
 
         .profile-separator {
             border-top: 1px solid #555;
@@ -63,7 +64,6 @@ select, input, button {
 
         .toggle-button {
             font-size: 12px;
-            width: auto;
             margin-left: 10px;
             padding: 5px 10px;
             background-color: #555;
@@ -71,56 +71,37 @@ select, input, button {
         }
 
         .exp-date {
-            color: #e7e12d; /* Color para destacar la fecha de expiración */
+            color: #e7e12d;
         }
 
         .search-container {
             margin-bottom: 20px;
         }
 
-        .search-container input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-
-        a {
-            text-decoration: none;
-            color: red;
-        }
-
         .highlight {
-    background-color: yellow; /* Cambia el color de fondo del texto resaltado */
-    color: black; /* Cambia el color del texto si lo deseas */
-}
+            background-color: yellow;
+            color: black;
+        }
 
-.container img {
-    display: block;
-    margin: 0 auto;
-    max-width: 15%;
-    height: auto;
-    border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-    /* Estilos para pantallas pequeñas */
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    /* Estilos para tabletas */
-}
-
-@media (min-width: 1025px) {
-    /* Estilos para pantallas grandes */
-}
-
+        .container img {
+            display: block;
+            margin: 0 auto;
+            max-width: 15%;
+            height: auto;
+            border-radius: 8px;
+        }
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
-<body>
+<body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
         <img src="../imagenes/disneyplus.png">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
@@ -146,7 +127,7 @@ select, input, button {
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
     <script>
         let profilesData = [];
         let editingAccountIndex = null;
@@ -168,7 +149,7 @@ select, input, button {
                     <input type="text" placeholder="PIN" id="pin-${i}">
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value="https://netflix.com/tv8">
+                    <input type="text" placeholder="Link" id="link-${i}" value="https://www.disneyplus.com/comenzar">
                 `;
                 formContainer.appendChild(form);
             }
@@ -226,17 +207,18 @@ select, input, button {
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('profilesData', JSON.stringify(profilesData));
-        }
+    localStorage.setItem('disneyProfiles', JSON.stringify(profilesData));
+}
 
-        function loadProfilesFromLocalStorage() {
-            const storedData = localStorage.getItem('profilesData');
-            if (storedData) {
-                profilesData = JSON.parse(storedData);
-                displayProfiles();
-                toggleSearchButton();
-            }
-        }
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('disneyProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
 
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');
@@ -308,6 +290,5 @@ select, input, button {
             displayProfiles(filteredData);
         }
     </script>
-
 </body>
 </html>

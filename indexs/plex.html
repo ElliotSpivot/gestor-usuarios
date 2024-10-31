@@ -64,7 +64,6 @@
 
         .toggle-button {
             font-size: 12px;
-            width: auto;
             margin-left: 10px;
             padding: 5px 10px;
             background-color: #555;
@@ -79,19 +78,6 @@
             margin-bottom: 20px;
         }
 
-        .search-container input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-
-        a {
-            text-decoration: none;
-            color: red;
-        }
-
         .highlight {
             background-color: yellow;
             color: black;
@@ -104,16 +90,22 @@
             height: auto;
             border-radius: 8px;
         }
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
-<body>
+<body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
-        <img src="../imagenes/plex.png" alt="Logo de Plex">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <img src="../imagenes/plex.png">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
             <option value="0">Selecciona un número</option>
-            <!-- Opciones de perfil -->
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -143,7 +135,7 @@
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
     <script>
         let profilesData = [];
         let editingAccountIndex = null;
@@ -165,7 +157,7 @@
                     <input type="text" placeholder="PIN" id="pin-${i}">
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value=" https://plex.tv/link">
+                    <input type="text" placeholder="Link" id="link-${i}" value="https://plex.tv/link">
                 `;
                 formContainer.appendChild(form);
             }
@@ -223,28 +215,18 @@
         }
 
         function saveToLocalStorage() {
-            try {
-                localStorage.setItem('profilesData', JSON.stringify(profilesData));
-                alert("Perfiles guardados con éxito.");
-            } catch (error) {
-                console.error("Error guardando en localStorage:", error);
-                alert("Error al guardar los perfiles.");
-            }
-        }
+    localStorage.setItem('plexProfiles', JSON.stringify(profilesData));
+}
 
-        function loadProfilesFromLocalStorage() {
-            try {
-                const storedData = localStorage.getItem('profilesData');
-                if (storedData) {
-                    profilesData = JSON.parse(storedData);
-                    displayProfiles();
-                    toggleSearchButton();
-                }
-            } catch (error) {
-                console.error("Error cargando desde localStorage:", error);
-                alert("Error al cargar los perfiles.");
-            }
-        }
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('plexProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
 
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');
@@ -315,10 +297,6 @@
             );
             displayProfiles(filteredData);
         }
-
-        // Cargar perfiles desde localStorage al inicio
-        loadProfilesFromLocalStorage();
     </script>
-
 </body>
 </html>

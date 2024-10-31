@@ -30,6 +30,7 @@
                 width: 95%;
             }
         }
+
         select, input, button {
             width: 90%;
             padding: 8px;
@@ -63,7 +64,6 @@
 
         .toggle-button {
             font-size: 12px;
-            width: auto;
             margin-left: 10px;
             padding: 5px 10px;
             background-color: #555;
@@ -78,19 +78,6 @@
             margin-bottom: 20px;
         }
 
-        .search-container input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-        }
-
-        a {
-            text-decoration: none;
-            color: red;
-        }
-
         .highlight {
             background-color: yellow;
             color: black;
@@ -103,11 +90,18 @@
             height: auto;
             border-radius: 8px;
         }
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
-<body>
+<body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
         <img src="../imagenes/Crunchyroll.jpeg">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
@@ -131,9 +125,9 @@
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
     <script>
-       let profilesData = [];
+        let profilesData = [];
         let editingAccountIndex = null;
 
         function generateForms() {
@@ -153,7 +147,7 @@
                     <input type="text" placeholder="PIN" id="pin-${i}">
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value="https://www.crunchyroll.com/activate">
+                    <input type="text" placeholder="Link" id="link-${i}" value="https://www.crunchyroll.com/es/activate">
                 `;
                 formContainer.appendChild(form);
             }
@@ -211,17 +205,18 @@
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('profilesData', JSON.stringify(profilesData));
-        }
+    localStorage.setItem('crunchyrollProfiles', JSON.stringify(profilesData));
+}
 
-        function loadProfilesFromLocalStorage() {
-            const storedData = localStorage.getItem('profilesData');
-            if (storedData) {
-                profilesData = JSON.parse(storedData);
-                displayProfiles();
-                toggleSearchButton();
-            }
-        }
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('crunchyrollProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
 
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');
@@ -292,10 +287,6 @@
             );
             displayProfiles(filteredData);
         }
-
-        // Carga de perfiles desde LocalStorage al iniciar la página
-        document.addEventListener('DOMContentLoaded', loadProfilesFromLocalStorage);
     </script>
-
 </body>
 </html>

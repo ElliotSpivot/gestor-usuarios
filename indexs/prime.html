@@ -104,12 +104,20 @@
             height: auto;
             border-radius: 8px;
         }
+
+        a {
+            color: red;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <img src="../imagenes/primevideo.png">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <img src="../imagenes/primevideo.png" alt="Logo de Prime Video">
         <h2>¿Cuántos perfiles quieres agregar?</h2>
         <select id="profileCount" onchange="generateForms()">
             <option value="0">Selecciona un número</option>
@@ -133,7 +141,7 @@
             <h2>Perfiles Agregados</h2>
         </div>
     </div>
-
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
     <script>
         let profilesData = [];
         let editingAccountIndex = null;
@@ -159,13 +167,13 @@
                 form.innerHTML = `
                     <h3>Perfil ${i}</h3>
                     ${i === 1 ? '<input type="text" placeholder="Nombre de la Cuenta" id="accountName" required>' : ''}
-                    <input type="email" placeholder="Correo" id="email-${i}" required>
+                    <input type="email" placeholder="Correo electronico" id="email-${i}" required>
                     <input type="text" placeholder="Contraseña" id="password-${i}" required>
-                    <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
-                    <input type="text" placeholder="PIN" id="pin-${i}">
-                    <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
-                    <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value="https://primevideo.com/mytv">
+                    <input type="text" placeholder="Perfil" id="profile-${i}">
+                    <input type="text" placeholder="Pin" id="pin-${i}">
+                    <input type="text" placeholder="Fecha de expiración" id="date-${i}" required>
+                    <input type="tel" placeholder="Numero de celular" id="phone-${i}" required>
+                    <input type="text" id="link-${i}" value="https://primevideo.com/mytv">
                 `;
                 formContainer.appendChild(form);
             }
