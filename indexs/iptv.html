@@ -96,6 +96,7 @@
         }
     </style>
 </head>
+
 <body onload="loadProfilesFromLocalStorage()">
 
     <div class="container">
@@ -111,7 +112,16 @@
             <option value="3">3</option>
             <option value="4">4</option>
             <option value="5">5</option>
-            
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
         </select>
 
         <div id="formContainer"></div>
@@ -127,82 +137,93 @@
         </div>
     </div>
     <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
+
     <script>
+
         let profilesData = [];
         let editingAccountIndex = null;
 
         function generateForms() {
-            const formContainer = document.getElementById('formContainer');
-            formContainer.innerHTML = '';
+    const formContainer = document.getElementById('formContainer');
+    formContainer.innerHTML = ''; // Limpia el contenedor de formularios
 
-            const profileCount = parseInt(document.getElementById('profileCount').value);
+    const profileCount = parseInt(document.getElementById('profileCount').value);
 
-            for (let i = 1; i <= profileCount; i++) {
-                const form = document.createElement('div');
-                form.innerHTML = `
-                    <h3>Perfil ${i}</h3>
-                    ${i === 1 ? '<input type="text" placeholder="Nombre de la Cuenta" id="accountName" required>' : ''}
-                    <input type="email" placeholder="Correo" id="email-${i}" required>
-                    <input type="text" placeholder="Contraseña" id="password-${i}" required>
-                    <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
-                    <input type="text" placeholder="PIN" id="pin-${i}">
-                    <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
-                    <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                `;
-                formContainer.appendChild(form);
-            }
+    for (let i = 1; i <= profileCount; i++) {
+        const form = document.createElement('div');
+        form.innerHTML = `
+            <h3>Perfil ${i}</h3>
+            ${i === 1 ? '<input type="text" placeholder="Nombre de la Cuenta" id="accountName" required>' : ''}
+            <input type="email" placeholder="Correo" id="email-${i}" required>
+            <input type="text" placeholder="Contraseña" id="password-${i}" required>
+            <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
+            <input type="text" placeholder="PIN" id="pin-${i}">
+            <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
+            <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
+            <input type="text" placeholder="Link" id="link-${i}">
+        `;
+        formContainer.appendChild(form);
+    }
 
-            if (editingAccountIndex !== null) {
-                loadEditingData();
-            }
+    if (editingAccountIndex !== null) {
+        loadEditingData(); // Cargar datos solo si estamos en modo de edición
+    }
+}
+
+
+
+function loadEditingData() {
+    const account = profilesData[editingAccountIndex];
+    document.getElementById('accountName').value = account.accountName;
+
+    account.profiles.forEach((profile, index) => {
+        if (document.getElementById(`email-${index + 1}`)) {
+            document.getElementById(`email-${index + 1}`).value = profile.email;
+            document.getElementById(`password-${index + 1}`).value = profile.password;
+            document.getElementById(`profile-${index + 1}`).value = profile.profile;
+            document.getElementById(`pin-${index + 1}`).value = profile.pin;
+            document.getElementById(`date-${index + 1}`).value = profile.date;
+            document.getElementById(`phone-${index + 1}`).value = profile.phone;
+            document.getElementById(`link-${index + 1}`).value = profile.link;
         }
+    });
+}
 
-        function loadEditingData() {
-            const account = profilesData[editingAccountIndex];
-            document.getElementById('accountName').value = account.accountName;
 
-            account.profiles.forEach((profile, index) => {
-                document.getElementById(`email-${index + 1}`).value = profile.email;
-                document.getElementById(`password-${index + 1}`).value = profile.password;
-                document.getElementById(`profile-${index + 1}`).value = profile.profile;
-                document.getElementById(`pin-${index + 1}`).value = profile.pin;
-                document.getElementById(`date-${index + 1}`).value = profile.date;
-                document.getElementById(`phone-${index + 1}`).value = profile.phone;
-                document.getElementById(`link-${index + 1}`).value = profile.link;
-            });
+function saveProfiles() {
+    const profileCount = parseInt(document.getElementById('profileCount').value);
+    const accountName = document.getElementById('accountName')?.value || 'Cuenta Sin Nombre';
 
-            document.getElementById('profileCount').value = account.profiles.length;
-        }
+    const profiles = [];
 
-        function saveProfiles() {
-            const profileCount = parseInt(document.getElementById('profileCount').value);
-            const accountName = document.getElementById('accountName')?.value || 'Cuenta Sin Nombre';
+    for (let i = 1; i <= profileCount; i++) {
+        const email = document.getElementById(`email-${i}`).value;
+        const password = document.getElementById(`password-${i}`).value;
+        const profile = document.getElementById(`profile-${i}`).value;
+        const pin = document.getElementById(`pin-${i}`).value;
+        const date = document.getElementById(`date-${i}`).value;
+        const phone = document.getElementById(`phone-${i}`).value;
+        const link = document.getElementById(`link-${i}`).value;
 
-            const profiles = [];
+        profiles.push({ email, password, profile, pin, date, phone, link });
+    }
 
-            for (let i = 1; i <= profileCount; i++) {
-                const email = document.getElementById(`email-${i}`).value;
-                const password = document.getElementById(`password-${i}`).value;
-                const profile = document.getElementById(`profile-${i}`).value;
-                const pin = document.getElementById(`pin-${i}`).value;
-                const date = document.getElementById(`date-${i}`).value;
-                const phone = document.getElementById(`phone-${i}`).value;
-                const link = document.getElementById(`link-${i}`).value;
+    if (editingAccountIndex !== null) {
+        // Actualizamos la cuenta seleccionada en lugar de crear una nueva
+        profilesData[editingAccountIndex].accountName = accountName;
+        profilesData[editingAccountIndex].profiles = profiles;
+        editingAccountIndex = null; // Salir del modo edición
+    } else {
+        // Crear una nueva cuenta solo si no estamos en edición
+        profilesData.push({ accountName, profiles });
+    }
 
-                profiles.push({ email, password, profile, pin, date, phone, link });
-            }
+    saveToLocalStorage();
+    displayProfiles();
+    toggleSearchButton();
+}
 
-            if (editingAccountIndex !== null) {
-                profilesData[editingAccountIndex] = { accountName, profiles };
-                editingAccountIndex = null;
-            } else {
-                profilesData.push({ accountName, profiles });
-            }
 
-            saveToLocalStorage();
-            displayProfiles();
-            toggleSearchButton();
-        }
 
         function saveToLocalStorage() {
     localStorage.setItem('iptvProfiles', JSON.stringify(profilesData));
@@ -217,7 +238,6 @@ function loadProfilesFromLocalStorage() {
     }
 }
 
-
         function displayProfiles(filteredData = profilesData) {
             const profilesDisplay = document.getElementById('profilesDisplay');
             profilesDisplay.innerHTML = '<h2>Perfiles Agregados</h2>';
@@ -230,21 +250,34 @@ function loadProfilesFromLocalStorage() {
                 profileCard.innerHTML = `
                     <h3>${highlightText(account.accountName, searchTerm)}</h3>
                     ${account.profiles.map((profile, index) => `
-                        <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
-                        <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
-                        <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
-                        <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
-                        <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
-                        <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
-                        <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
-                        ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
-                    `).join('')}
+    <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
+    <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
+    <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
+    <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
+    <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
+    <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
+    <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
+    <button onclick="deleteProfile(${accountIndex}, ${index})" class="toggle-button">Eliminar Perfil</button>
+    ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
+`).join('')}
                     <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
                     <button onclick="deleteAccount(${accountIndex})" class="toggle-button">Eliminar Cuenta</button>
                 `;
                 profilesDisplay.appendChild(profileCard);
             });
         }
+        
+        function deleteProfile(accountIndex, profileIndex) {
+    // Elimina el perfil específico del array de perfiles de la cuenta
+    profilesData[accountIndex].profiles.splice(profileIndex, 1);
+
+    // Guarda el array actualizado en localStorage
+    saveToLocalStorage();
+
+    // Vuelve a mostrar los perfiles para reflejar los cambios
+    displayProfiles();
+}
+
 
         function highlightText(text, searchTerm) {
             if (!searchTerm) return text;
@@ -258,13 +291,13 @@ function loadProfilesFromLocalStorage() {
         }
 
         function editAccount(accountIndex) {
-            editingAccountIndex = accountIndex;
-            const account = profilesData[accountIndex];
-            document.getElementById('profileCount').value = account.profiles.length;
-            generateForms();
-        }
-
-        function deleteAccount(accountIndex) {
+    editingAccountIndex = accountIndex;
+    const account = profilesData[accountIndex];
+    document.getElementById('profileCount').value = account.profiles.length;
+    generateForms(); // Llama a generateForms después de establecer el número de perfiles
+}
+    
+    function deleteAccount(accountIndex) {
             profilesData.splice(accountIndex, 1);
             saveToLocalStorage();
             displayProfiles();

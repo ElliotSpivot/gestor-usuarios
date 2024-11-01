@@ -58,7 +58,8 @@
         }
 
         .profile-separator {
-            border-top: 1px solid #555;
+            border-top: 1px solid #ac1313;
+
             margin: 10px 0;
         }
 
@@ -147,7 +148,7 @@
                     <input type="text" placeholder="PIN" id="pin-${i}">
                     <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
                     <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
-                    <input type="text" placeholder="Link" id="link-${i}" value="https://netflix.com/tv8">
+                    <input type="text" placeholder="Link" id="link-${i}" value="https://www.paramountplus.com/co/tv/">
                 `;
                 formContainer.appendChild(form);
             }
@@ -162,17 +163,17 @@
             document.getElementById('accountName').value = account.accountName;
 
             account.profiles.forEach((profile, index) => {
-                document.getElementById(`email-${index + 1}`).value = profile.email;
-                document.getElementById(`password-${index + 1}`).value = profile.password;
-                document.getElementById(`profile-${index + 1}`).value = profile.profile;
-                document.getElementById(`pin-${index + 1}`).value = profile.pin;
-                document.getElementById(`date-${index + 1}`).value = profile.date;
-                document.getElementById(`phone-${index + 1}`).value = profile.phone;
-                document.getElementById(`link-${index + 1}`).value = profile.link;
-            });
-
-            document.getElementById('profileCount').value = account.profiles.length;
+        if (document.getElementById(`email-${index + 1}`)) {
+            document.getElementById(`email-${index + 1}`).value = profile.email;
+            document.getElementById(`password-${index + 1}`).value = profile.password;
+            document.getElementById(`profile-${index + 1}`).value = profile.profile;
+            document.getElementById(`pin-${index + 1}`).value = profile.pin;
+            document.getElementById(`date-${index + 1}`).value = profile.date;
+            document.getElementById(`phone-${index + 1}`).value = profile.phone;
+            document.getElementById(`link-${index + 1}`).value = profile.link;
         }
+    });
+}
 
         function saveProfiles() {
             const profileCount = parseInt(document.getElementById('profileCount').value);
@@ -193,16 +194,19 @@
             }
 
             if (editingAccountIndex !== null) {
-                profilesData[editingAccountIndex] = { accountName, profiles };
-                editingAccountIndex = null;
-            } else {
-                profilesData.push({ accountName, profiles });
-            }
+        // Actualizamos la cuenta seleccionada en lugar de crear una nueva
+        profilesData[editingAccountIndex].accountName = accountName;
+        profilesData[editingAccountIndex].profiles = profiles;
+        editingAccountIndex = null; // Salir del modo edición
+    } else {
+        // Crear una nueva cuenta solo si no estamos en edición
+        profilesData.push({ accountName, profiles });
+    }
 
-            saveToLocalStorage();
-            displayProfiles();
-            toggleSearchButton();
-        }
+    saveToLocalStorage();
+    displayProfiles();
+    toggleSearchButton();
+}
 
         function saveToLocalStorage() {
     localStorage.setItem('paramountProfiles', JSON.stringify(profilesData));
@@ -237,6 +241,7 @@ function loadProfilesFromLocalStorage() {
                         <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
                         <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
                         <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
+                        <button onclick="deleteProfile(${accountIndex}, ${index})" class="toggle-button">Eliminar Perfil</button>
                         ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
                     `).join('')}
                     <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
@@ -245,6 +250,17 @@ function loadProfilesFromLocalStorage() {
                 profilesDisplay.appendChild(profileCard);
             });
         }
+
+        function deleteProfile(accountIndex, profileIndex) {
+    // Elimina el perfil específico del array de perfiles de la cuenta
+    profilesData[accountIndex].profiles.splice(profileIndex, 1);
+
+    // Guarda el array actualizado en localStorage
+    saveToLocalStorage();
+
+    // Vuelve a mostrar los perfiles para reflejar los cambios
+    displayProfiles();
+}
 
         function highlightText(text, searchTerm) {
             if (!searchTerm) return text;
