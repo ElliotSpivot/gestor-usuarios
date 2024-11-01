@@ -149,7 +149,7 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
+    
         // Tu configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA7MWoAWMcBF48XnG1xcmUCdmQzZ_7JvPA",
@@ -160,48 +160,35 @@
             appId: "1:596654360708:web:1ea8c1d5693832cda75ad1",
             measurementId: "G-P7ZNXRCJGG"
         };
-
+    
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth();
         const db = getFirestore();
-
-        // Verificar si el usuario está autenticado al cargar la página
-        const email = localStorage.getItem('userEmail');
-        const accepted = localStorage.getItem('userAccepted');
-
-        if (email && accepted === 'true') {
-            document.getElementById('grid-container').style.display = 'grid'; // Muestra la cuadrícula
-            document.getElementById('login-container').style.display = 'none'; // Oculta el contenedor de inicio de sesión
-        }
-
+    
         // Función de inicio de sesión
         window.login = async function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
-
+    
             try {
-                // Iniciar sesión con Firebase Authentication
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
-                // Verificar si el usuario ha sido aceptado en Firestore
+    
                 const usersRef = collection(db, "users");
                 const q = query(usersRef, where("email", "==", email));
                 const snapshot = await getDocs(q);
-
+    
                 if (!snapshot.empty) {
                     const userDoc = snapshot.docs[0].data();
                     if (userDoc.accepted) {
-                        // Almacena el email y el estado de aceptación en localStorage
                         localStorage.setItem('userEmail', email);
                         localStorage.setItem('userAccepted', 'true');
-
                         errorMessage.style.display = 'none';
-                        document.getElementById('grid-container').style.display = 'grid'; // Muestra la cuadrícula
-                        document.getElementById('login-container').style.display = 'none'; // Oculta el contenedor de inicio de sesión
+                        document.getElementById('grid-container').style.display = 'grid';
+                        document.getElementById('login-container').style.display = 'none';
                     } else {
                         errorMessage.style.display = 'block';
                         errorMessage.innerText = 'Tu cuenta está pendiente de aprobación.';
@@ -211,11 +198,39 @@
                     errorMessage.innerText = 'Usuario no encontrado.';
                 }
             } catch (error) {
-                const errorMessageText = error.message;
                 errorMessage.style.display = 'block';
-                errorMessage.innerText = errorMessageText; // Muestra el mensaje de error
+                errorMessage.innerText = error.message;
             }
         }
+    
+        // Verificar el estado de aceptación del usuario cada vez que se carga la página
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const email = user.email;
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("email", "==", email));
+                const snapshot = await getDocs(q);
+    
+                if (!snapshot.empty) {
+                    const userDoc = snapshot.docs[0].data();
+                    if (userDoc.accepted) {
+                        document.getElementById('grid-container').style.display = 'grid';
+                        document.getElementById('login-container').style.display = 'none';
+                    } else {
+                        await auth.signOut();
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('userAccepted');
+                        document.getElementById('login-container').style.display = 'flex';
+                        document.getElementById('grid-container').style.display = 'none';
+                        alert('Tu cuenta ya no está aprobada. Contacta al administrador.');
+                    }
+                }
+            } else {
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('grid-container').style.display = 'none';
+            }
+        });
+    
     </script>
 
 </body>
