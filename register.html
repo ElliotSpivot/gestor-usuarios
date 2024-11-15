@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #f9a825; /* Color dorado */
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+            width: 250px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #555; /* Fondo más claro para los inputs */
+            color: #fff;
+        }
+        button {
+            padding: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #f9a825; /* Botón dorado */
+            color: #1a1a1a; /* Texto oscuro en el botón */
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #c68b00; /* Color más oscuro al pasar el mouse */
+        }
+        #message {
+            color: green;
+            margin-top: 10px;
+            display: none; /* Ocultar inicialmente */
+        }
+        #error-message {
+            color: red;
+            margin-top: 10px;
+            display: none; /* Ocultar inicialmente */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Registro de Usuario</h1>
+    
+    <input type="email" id="email" placeholder="Correo Electrónico" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    <button onclick="register()">Registrarse</button>
+
+    <div id="message"></div>
+    <div id="error-message"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7MWoAWMcBF48XnG1xcmUCdmQzZ_7JvPA",
+            authDomain: "gestor-de-cuentas-6c3c3.firebaseapp.com",
+            projectId: "gestor-de-cuentas-6c3c3",
+            storageBucket: "gestor-de-cuentas-6c3c3.appspot.com",
+            messagingSenderId: "596654360708",
+            appId: "1:596654360708:web:1ea8c1d5693832cda75ad1",
+            measurementId: "G-P7ZNXRCJGG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getFirestore();
+
+        // Definir la función register
+        window.register = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            const errorMessageDiv = document.getElementById('error-message');
+
+            try {
+                // Crear usuario con Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Guardar usuario en Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    email: email,
+                    accepted: false, // Por defecto, no aceptado
+                });
+                console.log("Usuario guardado en Firestore:", user.uid); // Añade un log para verificar
+                messageDiv.innerText = "Registro exitoso. Espera aprobación.";
+                messageDiv.style.display = 'block'; // Muestra el mensaje de éxito
+                errorMessageDiv.style.display = 'none'; // Oculta el mensaje de error
+            } catch (error) {
+                console.error("Error al registrar el usuario:", error); // Captura el error
+                errorMessageDiv.innerText = "Error al registrar: " + error.message;
+                errorMessageDiv.style.display = 'block'; // Muestra el mensaje de error
+                messageDiv.style.display = 'none'; // Oculta el mensaje de éxito
+            }
+        };
+    </script>
+</body>
+</html>

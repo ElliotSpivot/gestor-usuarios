@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Perfiles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            justify-content: space-between;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container, .profiles-display {
+            width: 100%;
+            max-width: 800px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container, .profiles-display {
+                width: 95%;
+            }
+        }
+
+        select, input, button {
+            width: 90%;
+            padding: 8px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #e50914;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #b20710;
+        }
+
+        .profile-card {
+            background-color: #444;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .profile-separator {
+            border-top: 1px solid #555;
+            margin: 10px 0;
+        }
+
+        .toggle-button {
+            font-size: 12px;
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #555;
+            color: white;
+        }
+
+        .exp-date {
+            color: #f10800;
+            font-size: 18px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            background-color: yellow;
+            color: black;
+        }
+
+        .container img {
+            display: block;
+            margin: 0 auto;
+            max-width: 15%;
+            height: auto;
+            border-radius: 8px;
+        }
+        a {
+            color: red;
+            font-size: 20px;
+        }
+
+        .profile-card .cuenta {
+            color: red;
+        }
+    </style>
+</head>
+
+<body onload="loadProfilesFromLocalStorage()">
+
+    <div class="container">
+        <a href="../index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <img src="../imagenes/Crunchyroll.jpeg">
+        <h2>¿Cuántos perfiles quieres agregar?</h2>
+        <select id="profileCount" onchange="generateForms()">
+            <option value="0">Selecciona un número</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <div id="formContainer"></div>
+        <button onclick="saveProfiles()">Guardar Perfiles</button>
+    </div>
+
+    <div class="profiles-display">
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <input type="text" id="searchInput" placeholder="Buscar por cualquier dato" oninput="searchProfiles()">
+        </div>
+        <div id="profilesDisplay">
+            <h2>Perfiles Agregados</h2>
+        </div>
+    </div>
+    <script src="https://kit.fontawesome.com/0ab5347f44.js" crossorigin="anonymous"></script>
+
+    <script>
+
+        let profilesData = [];
+        let editingAccountIndex = null;
+
+        function generateForms() {
+    const formContainer = document.getElementById('formContainer');
+    formContainer.innerHTML = ''; // Limpia el contenedor de formularios
+
+    const profileCount = parseInt(document.getElementById('profileCount').value);
+
+    for (let i = 1; i <= profileCount; i++) {
+        const form = document.createElement('div');
+        form.innerHTML = `
+            <h3>Perfil ${i}</h3>
+            ${i === 1 ? '<input type="text" placeholder="Nombre de la Cuenta" id="accountName" required>' : ''}
+            <input type="email" placeholder="Correo" id="email-${i}" required>
+            <input type="text" placeholder="Contraseña" id="password-${i}" required>
+            <input type="text" placeholder="Nombre del Perfil" id="profile-${i}">
+            <input type="text" placeholder="PIN" id="pin-${i}">
+            <input type="text" placeholder="Fecha de Expiración" id="date-${i}" required>
+            <input type="tel" placeholder="Teléfono" id="phone-${i}" required>
+            <input type="text" placeholder="Link" id="link-${i}" value="https://www.crunchyroll.com/es/activate">
+        `;
+        formContainer.appendChild(form);
+    }
+
+    if (editingAccountIndex !== null) {
+        loadEditingData(); // Cargar datos solo si estamos en modo de edición
+    }
+}
+
+
+
+function loadEditingData() {
+    const account = profilesData[editingAccountIndex];
+    document.getElementById('accountName').value = account.accountName;
+
+    account.profiles.forEach((profile, index) => {
+        if (document.getElementById(`email-${index + 1}`)) {
+            document.getElementById(`email-${index + 1}`).value = profile.email;
+            document.getElementById(`password-${index + 1}`).value = profile.password;
+            document.getElementById(`profile-${index + 1}`).value = profile.profile;
+            document.getElementById(`pin-${index + 1}`).value = profile.pin;
+            document.getElementById(`date-${index + 1}`).value = profile.date;
+            document.getElementById(`phone-${index + 1}`).value = profile.phone;
+            document.getElementById(`link-${index + 1}`).value = profile.link;
+        }
+    });
+}
+
+
+function saveProfiles() {
+        const profileCount = parseInt(document.getElementById('profileCount').value);
+        const accountName = document.getElementById('accountName')?.value || 'Cuenta Sin Nombre';
+
+        const profiles = [];
+
+        for (let i = 1; i <= profileCount; i++) {
+            const email = document.getElementById(`email-${i}`).value;
+            const password = document.getElementById(`password-${i}`).value;
+            const profile = document.getElementById(`profile-${i}`).value;
+            const pin = document.getElementById(`pin-${i}`).value;
+            const date = document.getElementById(`date-${i}`).value;
+            const phone = document.getElementById(`phone-${i}`).value;
+            const link = document.getElementById(`link-${i}`).value;
+            const message = document.getElementById(`message-${i}`)?.value || "";  // Guardar mensaje personalizado
+
+            profiles.push({ email, password, profile, pin, date, phone, link, message });
+        }
+
+        if (editingAccountIndex !== null) {
+            profilesData[editingAccountIndex].accountName = accountName;
+            profilesData[editingAccountIndex].profiles = profiles;
+            editingAccountIndex = null;
+        } else {
+            profilesData.push({ accountName, profiles });
+        }
+
+        saveToLocalStorage();
+        displayProfiles();
+        toggleSearchButton();
+    }
+
+    
+
+    function displayProfiles(filteredData = profilesData) {
+    const profilesDisplay = document.getElementById('profilesDisplay');
+    profilesDisplay.innerHTML = '<h2>Perfiles Agregados</h2>';
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+    filteredData.forEach((account, accountIndex) => {
+        const profileCard = document.createElement('div');
+        profileCard.className = 'profile-card';
+        profileCard.innerHTML = `
+            <h3 class="cuenta">${highlightText(account.accountName, searchTerm)}</h3>
+            ${account.profiles.map((profile, index) => {
+                const isLastProfile = index === account.profiles.length - 1;
+                const isFirstProfile = index === 0;
+
+                // Cálculo del mensaje predeterminado con el correo electrónico
+                const defaultMessage = calculateExpiryMessage(profile.date, profile.email);
+
+                return `
+                    <p><strong>Correo:</strong> ${highlightText(profile.email, searchTerm)}</p>
+                    <p><strong>Contraseña:</strong> ${highlightText(profile.password, searchTerm)}</p>
+                    <p><strong>Perfil:</strong> ${highlightText(profile.profile, searchTerm)}</p>
+                    <p><strong>PIN:</strong> ${highlightText(profile.pin, searchTerm)}</p>
+                    <p class="exp-date"><strong>Fecha de Expiración:</strong> ${highlightText(profile.date, searchTerm)}</p>
+                    <p><strong>Teléfono:</strong> ${highlightText(profile.phone, searchTerm)}</p>
+                    <p><strong>Activar TV:</strong> <a href="${profile.link}" target="_blank">${highlightText(profile.link, searchTerm)}</a></p>
+
+                    <!-- Campo de mensaje personalizado con mensaje predeterminado -->
+                    <input type="text" id="message-${accountIndex}-${index}" placeholder="Escribe tu mensaje aquí" style="width: 70%; margin-top: 8px; margin-left: 10px;" 
+                        oninput="saveMessage('${accountIndex}-${index}')"
+                        value="${getSavedMessage(accountIndex, index) || defaultMessage}">
+
+                    ${(isFirstProfile || isLastProfile) ? `
+                        <button onclick="sendWhatsAppMessage('${profile.phone}', 'message-${accountIndex}-${index}')" class="toggle-button">Enviar Mensaje de WhatsApp</button>
+                        <button onclick="deleteProfile(${accountIndex}, ${index})" class="toggle-button">Eliminar Perfil</button>
+                        ${isLastProfile ? `<button onclick="deleteAccount(${accountIndex})" class="toggle-button">Eliminar Cuenta</button>` : ""}
+                    ` : ""}
+                    ${index < account.profiles.length - 1 ? '<div class="profile-separator"></div>' : ''}
+                `;
+            }).join('')}
+            
+            <button onclick="editAccount(${accountIndex})" class="toggle-button">Editar Cuenta</button>
+        `;
+        profilesDisplay.appendChild(profileCard);
+    });
+}
+
+    function calculateExpiryMessage(expiryDate, email) {
+    const currentDate = new Date();
+    const expDate = new Date(expiryDate);
+    const differenceInDays = Math.ceil((expDate - currentDate) / (1000 * 60 * 60 * 24));
+    
+    // Si faltan 1 o menos días, agrega el mensaje de expiración
+    if (differenceInDays <= 1) {
+        return `Buen día. Su Perfil de Crunchyroll *(${profile})* vence en *1 día.* ¿Le gustaría renovar la membresía?`;
+    } else {
+        return "";
+    }
+}
+
+    function saveMessage(messageId) {
+        const message = document.getElementById(`message-${messageId}`).value;
+        localStorage.setItem(`whatsappMessage-${messageId}`, message);
+    }
+
+    function getSavedMessage(accountIndex, profileIndex) {
+        return localStorage.getItem(`whatsappMessage-${accountIndex}-${profileIndex}`) || '';
+    }
+
+    function sendWhatsAppMessage(phone, messageId) {
+        const message = document.getElementById(messageId).value || "Hola, me gustaría ponerme en contacto contigo.";
+        const encodedMessage = encodeURIComponent(message);
+        const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+        window.open(url, '_blank');
+    }
+
+
+        function saveToLocalStorage() {
+    localStorage.setItem('crunchyrollProfiles', JSON.stringify(profilesData));
+}
+
+function loadProfilesFromLocalStorage() {
+    const storedData = localStorage.getItem('crunchyrollProfiles');
+    if (storedData) {
+        profilesData = JSON.parse(storedData);
+        displayProfiles();
+        toggleSearchButton();
+    }
+}
+
+
+        
+        function deleteProfile(accountIndex, profileIndex) {
+    // Elimina el perfil específico del array de perfiles de la cuenta
+    profilesData[accountIndex].profiles.splice(profileIndex, 1);
+
+    // Guarda el array actualizado en localStorage
+    saveToLocalStorage();
+
+    // Vuelve a mostrar los perfiles para reflejar los cambios
+    displayProfiles();
+}
+
+
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function toggleSearchButton() {
+            const searchContainer = document.getElementById('searchContainer');
+            searchContainer.style.display = profilesData.length ? 'block' : 'none';
+        }
+
+        function editAccount(accountIndex) {
+    editingAccountIndex = accountIndex;
+    const account = profilesData[accountIndex];
+    document.getElementById('profileCount').value = account.profiles.length;
+    generateForms(); // Llama a generateForms después de establecer el número de perfiles
+}
+    
+    function deleteAccount(accountIndex) {
+            profilesData.splice(accountIndex, 1);
+            saveToLocalStorage();
+            displayProfiles();
+            toggleSearchButton();
+        }
+
+        function searchProfiles() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = profilesData.filter(account =>
+                account.accountName.toLowerCase().includes(searchTerm) ||
+                account.profiles.some(profile =>
+                    profile.email.toLowerCase().includes(searchTerm) ||
+                    profile.password.toLowerCase().includes(searchTerm) ||
+                    profile.profile.toLowerCase().includes(searchTerm) ||
+                    profile.pin.toLowerCase().includes(searchTerm) ||
+                    profile.date.toLowerCase().includes(searchTerm) ||
+                    profile.phone.toLowerCase().includes(searchTerm) ||
+                    profile.link.toLowerCase().includes(searchTerm)
+                )
+            );
+            displayProfiles(filteredData);
+        }
+    </script>
+</body>
+</html>

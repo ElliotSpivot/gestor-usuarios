@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Cuentas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: #f1f1f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #f9a825; /* Color dorado */
+        }
+        #login-container {
+            background-color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #login-container input {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1rem;
+            width: 250px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #555; /* Fondo más claro para los inputs */
+            color: #fff;
+        }
+        #login-container button {
+            padding: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #f9a825; /* Botón dorado */
+            color: #1a1a1a; /* Texto oscuro en el botón */
+            transition: background-color 0.3s ease;
+            margin: 10px; /* Margen añadido */
+        }
+        #login-container button:hover {
+            background-color: #c68b00; /* Color más oscuro al pasar el mouse */
+        }
+        #error-message {
+            color: red;
+            margin-top: 10px;
+            display: none; /* Ocultar inicialmente */
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+            display: none; /* Ocultar inicialmente */
+        }
+        .grid-item {
+            text-align: center;
+        }
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        .grid-item img:hover {
+            transform: scale(1.05);
+        }
+       
+    </style>
+</head>
+<body>
+
+    <h1>Gestor de Cuentas</h1>
+    
+    <div id="login-container">
+        <input type="email" id="email" placeholder="Correo Electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button onclick="login()">Iniciar Sesión</button>
+        <div id="error-message"></div>
+        <button onclick="location.href='register.html'">Registrarse</button>
+        <a href="https://t.me/MiguelCarmonaM" target="_blank">
+            <button>
+                Adquirir
+            </button>
+        </a>
+    </div>
+
+    <div class="grid-container" id="grid-container">
+        <div class="grid-item">
+            <a href="indexs/netflix.html"><img src="imagenes/netflix.jpg" title="Netflix"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/prime.html"><img src="imagenes/primevideo.png" title="Prime Video"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/paramount.html"><img src="imagenes/Paramount.png" title="Paramount"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/youtube.html"><img src="imagenes/youtube.jpg" title="YouTube Premium"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/hbo.html"><img src="imagenes/hbomax.jpeg" title="HBO Max"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/Crunchyroll.html"><img src="imagenes/Crunchyroll.jpeg" title="Crunchyroll"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/plex.html"><img src="imagenes/plex.png" title="Plex"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/iptv.html"><img src="imagenes/iptv.png" title="IPTV"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/vix.html"><img src="imagenes/vix.jpg" title="Vix"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/canva.html"><img src="imagenes/canva.png" title="Canva"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/disney.html"><img src="imagenes/disneyplus.png" title="Disney Plus"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/spotify.html"><img src="imagenes/spotify.png" title="Spotify Plus"></a>
+        </div>
+        <div class="grid-item">
+            <a href="indexs/flujotv.html"><img src="imagenes/flujotvv.webp" title="FlujoTV"></a>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importar las funciones necesarias de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7MWoAWMcBF48XnG1xcmUCdmQzZ_7JvPA",
+            authDomain: "gestor-de-cuentas-6c3c3.firebaseapp.com",
+            projectId: "gestor-de-cuentas-6c3c3",
+            storageBucket: "gestor-de-cuentas-6c3c3.appspot.com",
+            messagingSenderId: "596654360708",
+            appId: "1:596654360708:web:1ea8c1d5693832cda75ad1",
+            measurementId: "G-P7ZNXRCJGG"
+        };
+    
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        const db = getFirestore();
+    
+        // Función de inicio de sesión
+        window.login = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+    
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+    
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("email", "==", email));
+                const snapshot = await getDocs(q);
+    
+                if (!snapshot.empty) {
+                    const userDoc = snapshot.docs[0].data();
+                    if (userDoc.accepted) {
+                        localStorage.setItem('userEmail', email);
+                        localStorage.setItem('userAccepted', 'true');
+                        errorMessage.style.display = 'none';
+                        document.getElementById('grid-container').style.display = 'grid';
+                        document.getElementById('login-container').style.display = 'none';
+                    } else {
+                        errorMessage.style.display = 'block';
+                        errorMessage.innerText = 'Tu cuenta está pendiente de aprobación.';
+                    }
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.innerText = 'Usuario no encontrado.';
+                }
+            } catch (error) {
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = error.message;
+            }
+        }
+    
+        // Verificar el estado de aceptación del usuario cada vez que se carga la página
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const email = user.email;
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("email", "==", email));
+                const snapshot = await getDocs(q);
+    
+                if (!snapshot.empty) {
+                    const userDoc = snapshot.docs[0].data();
+                    if (userDoc.accepted) {
+                        document.getElementById('grid-container').style.display = 'grid';
+                        document.getElementById('login-container').style.display = 'none';
+                    } else {
+                        await auth.signOut();
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('userAccepted');
+                        document.getElementById('login-container').style.display = 'flex';
+                        document.getElementById('grid-container').style.display = 'none';
+                        alert('Tu cuenta ya no está aprobada. Contacta al administrador.');
+                    }
+                }
+            } else {
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('grid-container').style.display = 'none';
+            }
+        });
+    
+    </script>
+
+</body>
+</html>
